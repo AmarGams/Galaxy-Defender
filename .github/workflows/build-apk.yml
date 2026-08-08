@@ -31,7 +31,7 @@ jobs:
 
       - name: Prepare Android entry file
         run: |
-          cp "galaxy defender.py" main.py
+          cp "galaxy_defender .py" main.py
 
       - name: Create Buildozer configuration
         run: |
