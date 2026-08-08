@@ -39,6 +39,7 @@ jobs:
           [app]
           title = Galaxy Defender
           package.name = galaxydefender
+          version = 1.0
           package.domain = com.amargams
           source.dir = .
           source.include_exts = py,mp3
