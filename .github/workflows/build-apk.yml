@@ -43,7 +43,7 @@ jobs:
           package.domain = com.amargams
           source.dir = .
           source.include_exts = py,mp3
-          requirements = python3,pygame
+          requirements = python3,pygame==2.6.1
           orientation = landscape
           fullscreen = 1
           android.api = 35
