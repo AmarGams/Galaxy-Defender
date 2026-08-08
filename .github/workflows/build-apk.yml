@@ -21,17 +21,23 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             git zip unzip openjdk-17-jdk \
-            autoconf libtool pkg-config \
+            autoconf automake libtool pkg-config \
             zlib1g-dev libncurses5-dev libncursesw5-dev \
-            libtinfo5 cmake libffi-dev libssl-dev \
-            automake autopoint gettext
+            libtinfo6 cmake libffi-dev libssl-dev \
+            gettext autopoint curl
+
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
       - name: Create Python environment
         run: |
           python -m venv .venv
           . .venv/bin/activate
-          python -m pip install --upgrade pip setuptools
-          pip install buildozer cython==0.29.34
+          python -m pip install --upgrade pip setuptools wheel
+          pip install "cython==0.29.34"
+          pip install buildozer
 
       - name: Prepare Android entry file
         run: |
@@ -43,11 +49,11 @@ jobs:
           [app]
           title = Galaxy Defender
           package.name = galaxydefender
-          version = 1.0
           package.domain = com.amargams
+          version = 1.0
 
           source.dir = .
-          source.include_exts = py,mp3
+          source.include_exts = py,mp3,ogg,wav,png,jpg,jpeg
           requirements = python3,pygame
 
           orientation = landscape
@@ -55,10 +61,9 @@ jobs:
 
           android.api = 35
           android.minapi = 23
+          android.accept_sdk_license = True
 
           p4a.branch = master
-
-          android.accept_sdk_license = True
 
           [buildozer]
           log_level = 2
@@ -68,10 +73,11 @@ jobs:
       - name: Build APK
         run: |
           . .venv/bin/activate
-          buildozer -v android debug
+          buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Galaxy-Defender-APK
           path: bin/*.apk
+          if-no-files-found: error
