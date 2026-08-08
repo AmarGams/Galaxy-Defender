@@ -22,8 +22,8 @@ jobs:
           sudo apt-get install -y \
             git zip unzip openjdk-17-jdk \
             autoconf libtool pkg-config \
-            zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 \
-            cmake libffi-dev libssl-dev \
+            zlib1g-dev libncurses5-dev libncursesw5-dev \
+            libtinfo5 cmake libffi-dev libssl-dev \
             automake autopoint gettext
 
       - name: Create Python environment
@@ -48,7 +48,7 @@ jobs:
 
           source.dir = .
           source.include_exts = py,mp3
-          requirements = python3,pygame==2.6.1
+          requirements = python3,pygame
 
           orientation = landscape
           fullscreen = 1
