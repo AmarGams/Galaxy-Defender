@@ -1,14 +1,40 @@
-      - name: Check project files
-        shell: pwsh
+name: Build Galaxy Defender EXE
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Get game files
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Pygame and PyInstaller
         run: |
-          Write-Host "Current folder:"
-          Get-Location
-          Write-Host "Python files found:"
-          Get-ChildItem -Path . -Recurse -File -Filter "*.py" | ForEach-Object {
-            Write-Host $_.FullName
+          python -m pip install --upgrade pip
+          pip install pygame pyinstaller
+
+      - name: Check game file
+        run: |
+          dir
+          if (!(Test-Path ".\galaxy_defender.py")) {
+            Write-Error "galaxy_defender.py was not found!"
+            exit 1
           }
 
-      - name: Build EXE
-        shell: pwsh
+      - name: Build Galaxy Defender
         run: |
-          pyinstaller --onefile --windowed --name "Galaxy Defender" "galaxy_defender.py"
+          pyinstaller --onefile --windowed --name "Galaxy Defender" ".\galaxy_defender.py"
+
+      - name: Upload Galaxy Defender EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: Galaxy-Defender-Windows
+          path: "dist\Galaxy Defender.exe"
