@@ -21,9 +21,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install pygame pyinstaller
 
-      - name: Build EXE
+      - name: Find game file
+        shell: pwsh
         run: |
-          pyinstaller --onefile --windowed --name "Galaxy Defender" galaxy_defender.py
+          Get-ChildItem -Path . -Recurse -Filter "galaxy_defender.py" | Select-Object FullName
+
+      - name: Build EXE
+        shell: pwsh
+        run: |
+          $game = Get-ChildItem -Path . -Recurse -Filter "galaxy_defender.py" | Select-Object -First 1
+          pyinstaller --onefile --windowed --name "Galaxy Defender" "$($game.FullName)"
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
