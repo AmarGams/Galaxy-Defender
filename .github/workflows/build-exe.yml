@@ -1,6 +1,9 @@
 name: Build Galaxy Defender EXE
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
