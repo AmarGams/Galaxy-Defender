@@ -18,10 +18,20 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            git zip unzip openjdk-17-jdk \
-            autoconf automake libtool pkg-config \
-            zlib1g-dev libncurses5-dev libncursesw5-dev \
-            libffi-dev libssl-dev cmake
+            git \
+            zip \
+            unzip \
+            openjdk-17-jdk \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            zlib1g-dev \
+            libncurses5-dev \
+            libncursesw5-dev \
+            libffi-dev \
+            libssl-dev \
+            cmake
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -31,17 +41,19 @@ jobs:
       - name: Install Buildozer
         run: |
           python -m pip install --upgrade pip
-          pip install buildozer setuptools cython==0.29.34
+          pip install buildozer
+          pip install cython==0.29.34
 
-      - name: Clean old Android build files
+      - name: Clean old Android build
         run: |
           rm -rf ~/.buildozer
           rm -rf .buildozer
 
-      - name: Check main.py
+      - name: Check game files
         run: |
           test -f main.py
           echo "main.py found!"
+          ls -la
 
       - name: Create Buildozer spec
         run: |
@@ -56,8 +68,10 @@ jobs:
           requirements = python3,pygame
           orientation = landscape
           fullscreen = 1
+
           android.api = 33
           android.minapi = 21
+          android.archs = arm64-v8a
 
           [buildozer]
           log_level = 2
