@@ -46,13 +46,8 @@ jobs:
 
       - name: Check game
         run: |
-          if [ ! -f main.py ]; then
-            echo "ERROR: main.py is missing!"
-            exit 1
-          fi
-
+          test -f main.py
           echo "main.py found!"
-          ls -lh main.py
 
       - name: Create Buildozer spec
         run: |
@@ -76,26 +71,51 @@ jobs:
           warn_on_root = 0
           EOF
 
-      - name: Build APK
+      - name: Prepare Android SDK and accept licenses
         run: |
-          buildozer -v android debug 2>&1 | tee build.log
-          BUILD_RESULT=${PIPESTATUS[0]}
+          export ANDROID_HOME="$HOME/.buildozer/android/platform/android-sdk"
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
 
-          echo ""
-          echo "======================================"
-          echo "        BUILD FINISHED"
-          echo "======================================"
+          mkdir -p "$ANDROID_HOME"
 
-          echo ""
-          echo "Searching automatically for AIDL..."
+          yes | buildozer android update || true
 
-          find "$HOME/.buildozer" -type f -name "aidl" -print 2>/dev/null || true
+          echo "Accepting Android SDK licenses..."
 
-          echo ""
-          echo "Last errors from Buildozer:"
-          grep -i -E "aidl|error|failed|exception|fatal" build.log | tail -80 || true
+          find "$HOME/.buildozer/android/platform" \
+            -type f \
+            -name sdkmanager \
+            -print
 
-          exit $BUILD_RESULT
+          SDKMANAGER=$(find "$HOME/.buildozer/android/platform" \
+            -type f \
+            -name sdkmanager \
+            | head -1)
+
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager not found!"
+            exit 1
+          fi
+
+          echo "Using:"
+          echo "$SDKMANAGER"
+
+          yes | "$SDKMANAGER" --licenses || true
+
+          "$SDKMANAGER" \
+            "platform-tools" \
+            "platforms;android-33" \
+            "build-tools;33.0.2" || true
+
+      - name: Build Galaxy Defender
+        run: |
+          buildozer -v android debug
+
+      - name: Show APK
+        if: success()
+        run: |
+          echo "APK BUILD SUCCESSFUL!"
+          ls -lh bin/
 
       - name: Upload APK
         if: success()
