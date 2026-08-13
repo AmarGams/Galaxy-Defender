@@ -14,13 +14,14 @@ jobs:
       - name: Checkout Galaxy Defender
         uses: actions/checkout@v4
 
-      - name: Install system packages
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             git \
             zip \
             unzip \
+            wget \
             openjdk-17-jdk \
             autoconf \
             automake \
@@ -48,6 +49,55 @@ jobs:
         run: |
           test -f main.py
           echo "main.py found!"
+          ls -lh main.py
+
+      - name: Install Android command line tools
+        run: |
+          mkdir -p "$HOME/android-sdk/cmdline-tools"
+
+          cd /tmp
+
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+
+          unzip -q commandlinetools-linux-11076708_latest.zip
+
+          mv cmdline-tools "$HOME/android-sdk/cmdline-tools/latest"
+
+          echo "Android SDK installed."
+
+      - name: Configure Android SDK
+        run: |
+          echo "ANDROID_HOME=$HOME/android-sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> "$GITHUB_ENV"
+          echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$HOME/android-sdk/platform-tools" >> "$GITHUB_PATH"
+
+      - name: Accept Android licenses
+        run: |
+          yes | "$HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager" --licenses
+
+      - name: Install Android SDK packages
+        run: |
+          "$HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager" \
+            "platform-tools" \
+            "platforms;android-33" \
+            "build-tools;33.0.2"
+
+      - name: Verify AIDL
+        run: |
+          echo "Searching for AIDL..."
+
+          find "$HOME/android-sdk" -type f -name aidl -print
+
+          AIDL=$(find "$HOME/android-sdk" -type f -name aidl | head -1)
+
+          if [ -z "$AIDL" ]; then
+            echo "AIDL was NOT installed!"
+            exit 1
+          fi
+
+          echo "AIDL FOUND:"
+          "$AIDL" --version
 
       - name: Create Buildozer spec
         run: |
@@ -62,6 +112,7 @@ jobs:
           requirements = python3,pygame
           orientation = landscape
           fullscreen = 1
+
           android.api = 33
           android.minapi = 21
           android.archs = arm64-v8a
@@ -71,42 +122,6 @@ jobs:
           warn_on_root = 0
           EOF
 
-      - name: Prepare Android SDK and accept licenses
-        run: |
-          export ANDROID_HOME="$HOME/.buildozer/android/platform/android-sdk"
-          export ANDROID_SDK_ROOT="$ANDROID_HOME"
-
-          mkdir -p "$ANDROID_HOME"
-
-          yes | buildozer android update || true
-
-          echo "Accepting Android SDK licenses..."
-
-          find "$HOME/.buildozer/android/platform" \
-            -type f \
-            -name sdkmanager \
-            -print
-
-          SDKMANAGER=$(find "$HOME/.buildozer/android/platform" \
-            -type f \
-            -name sdkmanager \
-            | head -1)
-
-          if [ -z "$SDKMANAGER" ]; then
-            echo "sdkmanager not found!"
-            exit 1
-          fi
-
-          echo "Using:"
-          echo "$SDKMANAGER"
-
-          yes | "$SDKMANAGER" --licenses || true
-
-          "$SDKMANAGER" \
-            "platform-tools" \
-            "platforms;android-33" \
-            "build-tools;33.0.2" || true
-
       - name: Build Galaxy Defender
         run: |
           buildozer -v android debug
@@ -114,7 +129,9 @@ jobs:
       - name: Show APK
         if: success()
         run: |
+          echo "=============================="
           echo "APK BUILD SUCCESSFUL!"
+          echo "=============================="
           ls -lh bin/
 
       - name: Upload APK
