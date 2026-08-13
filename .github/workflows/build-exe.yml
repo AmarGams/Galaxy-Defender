@@ -1,4 +1,4 @@
-name: Build Galaxy Defender EXE
+name: Build Galaxy Defender EXE - Windows 7
 
 on:
   push:
@@ -14,23 +14,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Setup Python 3.8
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.8.10"
 
-      - name: Install Python packages
+      - name: Install compatible packages
         run: |
           python -m pip install --upgrade pip
-          pip install pygame pyinstaller
-
-      - name: Show repository files
-        shell: pwsh
-        run: |
-          Write-Host "===== REPOSITORY FILES ====="
-          Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -File | ForEach-Object {
-            Write-Host $_.FullName
-          }
+          pip install pygame==2.1.3
+          pip install pyinstaller==5.13.2
 
       - name: Find Galaxy Defender
         shell: pwsh
@@ -38,22 +31,20 @@ jobs:
           $game = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -File -Filter "galaxy_defender.py" | Select-Object -First 1
 
           if ($null -eq $game) {
-            Write-Error "galaxy_defender.py was NOT found in the downloaded repository."
+            Write-Error "galaxy_defender.py was NOT found!"
             exit 1
           }
 
-          Write-Host "FOUND GAME:"
-          Write-Host $game.FullName
-
+          Write-Host "FOUND: $($game.FullName)"
           "GAME_FILE=$($game.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Build Galaxy Defender
+      - name: Build Windows 7 EXE
         shell: pwsh
         run: |
           pyinstaller --onefile --windowed --name "Galaxy Defender" "$env:GAME_FILE"
 
-      - name: Upload Galaxy Defender EXE
+      - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
-          name: Galaxy-Defender-Windows
+          name: Galaxy-Defender-Windows-7
           path: "dist/Galaxy Defender.exe"
