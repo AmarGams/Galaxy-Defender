@@ -18,12 +18,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            git zip unzip openjdk-17-jdk python3-pip \
-            autoconf libtool pkg-config zlib1g-dev \
-            libncurses5-dev libncursesw5-dev libtinfo5 \
-            cmake libffi-dev libssl-dev automake
+            git zip unzip openjdk-17-jdk \
+            autoconf automake libtool pkg-config \
+            zlib1g-dev libncurses5-dev libncursesw5-dev \
+            libffi-dev libssl-dev cmake
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -31,15 +31,15 @@ jobs:
       - name: Install Buildozer
         run: |
           python -m pip install --upgrade pip
-          pip install buildozer setuptools cython==0.29.34
+          pip install buildozer setuptools
+          pip install cython==0.29.34
 
-      - name: Check game
+      - name: Check main.py
         run: |
           test -f main.py
           echo "main.py found!"
-          ls -la
 
-      - name: Create buildozer.spec
+      - name: Create Buildozer spec
         run: |
           cat > buildozer.spec <<'EOF'
           [app]
@@ -57,6 +57,30 @@ jobs:
           log_level = 2
           warn_on_root = 0
           EOF
+
+      - name: Install Android SDK components
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+
+          yes | "$SDKMANAGER" --licenses || true
+
+          "$SDKMANAGER" \
+            "platform-tools" \
+            "platforms;android-33" \
+            "build-tools;33.0.2"
+
+      - name: Verify AIDL
+        run: |
+          echo "Checking for AIDL..."
+          find "$ANDROID_HOME" -type f -name aidl -print
+          aidl_path=$(find "$ANDROID_HOME" -type f -name aidl | head -n 1)
+
+          if [ -z "$aidl_path" ]; then
+            echo "AIDL was not found!"
+            exit 1
+          fi
+
+          echo "AIDL FOUND: $aidl_path"
 
       - name: Build APK
         run: |
