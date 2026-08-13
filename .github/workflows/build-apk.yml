@@ -14,7 +14,7 @@ jobs:
       - name: Checkout Galaxy Defender
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
+      - name: Install system packages
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -29,12 +29,11 @@ jobs:
             zlib1g-dev \
             libncurses5-dev \
             libncursesw5-dev \
-            libtinfo5 \
             libffi-dev \
             libssl-dev \
             cmake
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -45,14 +44,13 @@ jobs:
           pip install buildozer
           pip install cython==0.29.34
 
-      - name: Clean Buildozer cache
-        run: |
-          rm -rf ~/.buildozer
-          rm -rf .buildozer
-
       - name: Check game
         run: |
-          test -f main.py
+          if [ ! -f main.py ]; then
+            echo "ERROR: main.py is missing!"
+            exit 1
+          fi
+
           echo "main.py found!"
           ls -lh main.py
 
@@ -69,7 +67,6 @@ jobs:
           requirements = python3,pygame
           orientation = landscape
           fullscreen = 1
-
           android.api = 33
           android.minapi = 21
           android.archs = arm64-v8a
@@ -79,59 +76,29 @@ jobs:
           warn_on_root = 0
           EOF
 
-      - name: First Buildozer setup
+      - name: Build APK
         run: |
-          buildozer -v android debug || true
+          buildozer -v android debug 2>&1 | tee build.log
+          BUILD_RESULT=${PIPESTATUS[0]}
 
-      - name: Find Android SDK
-        run: |
-          echo "===== ANDROID SDK ====="
-          find ~/.buildozer/android/platform -maxdepth 2 -type d -name "android-sdk*" -print
+          echo ""
+          echo "======================================"
+          echo "        BUILD FINISHED"
+          echo "======================================"
 
-      - name: Install Android Build Tools
-        run: |
-          SDK="$HOME/.buildozer/android/platform/android-sdk"
+          echo ""
+          echo "Searching automatically for AIDL..."
 
-          if [ -d "$SDK/cmdline-tools/latest/bin" ]; then
-            SDKMANAGER="$SDK/cmdline-tools/latest/bin/sdkmanager"
-          elif [ -f "$SDK/tools/bin/sdkmanager" ]; then
-            SDKMANAGER="$SDK/tools/bin/sdkmanager"
-          else
-            echo "sdkmanager not found"
-            find "$HOME/.buildozer/android/platform" -name sdkmanager -type f -print
-            exit 1
-          fi
+          find "$HOME/.buildozer" -type f -name "aidl" -print 2>/dev/null || true
 
-          yes | "$SDKMANAGER" --sdk_root="$SDK" --licenses || true
-          "$SDKMANAGER" --sdk_root="$SDK" "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          echo ""
+          echo "Last errors from Buildozer:"
+          grep -i -E "aidl|error|failed|exception|fatal" build.log | tail -80 || true
 
-      - name: Verify AIDL
-        run: |
-          SDK="$HOME/.buildozer/android/platform/android-sdk"
+          exit $BUILD_RESULT
 
-          echo "===== SEARCHING FOR AIDL ====="
-          find "$SDK/build-tools" -type f -name aidl -print
-
-          AIDL=$(find "$SDK/build-tools" -type f -name aidl | head -1)
-
-          if [ -z "$AIDL" ]; then
-            echo "AIDL STILL NOT FOUND"
-            exit 1
-          fi
-
-          echo "AIDL FOUND:"
-          "$AIDL" --version
-
-      - name: Build Galaxy Defender
-        run: |
-          buildozer -v android debug
-
-      - name: Show APK
-        run: |
-          echo "===== APK FILES ====="
-          ls -lh bin/
-
-      - name: Upload Galaxy Defender APK
+      - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Galaxy-Defender-APK
