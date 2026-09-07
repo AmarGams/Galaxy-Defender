@@ -47,12 +47,11 @@ jobs:
           python --version
           buildozer --version
 
-      - name: Cache Buildozer downloads
+      - name: Cache Buildozer SDK only
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.buildozer
-          key: buildozer-p4a-develop-v2
+          path: ~/.buildozer
+          key: buildozer-sdk-master-py311-v3
 
       - name: Build debug APK
         run: |
@@ -61,7 +60,6 @@ jobs:
       - name: List APK
         if: success()
         run: |
-          echo "APK files:"
           ls -lh bin/ || true
           find . -name "*.apk" -print
 
