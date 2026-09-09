@@ -1,8 +1,4 @@
-diff --git a/.github/workflows/build-apk.yml b/.github/workflows/build-apk.yml
-index 239c37c292fedaf97fb1ecb6df2bfc504594edc3..f7790e010bd06af995f1f1d42ed9e8d8c727999e 100644
---- a/.github/workflows/build-apk.yml
-+++ b/.github/workflows/build-apk.yml
-@@ -1,73 +1,89 @@
+
  name: Build Galaxy Defender APK
  
  on:
