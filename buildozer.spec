@@ -7,13 +7,12 @@ package.domain = org.amargams
 source.dir = .
 source.include_exts = py,png,jpg,jpeg,gif,mp3,wav,ogg,txt
 source.exclude_dirs = tests, bin, .github, .git, .buildozer
-source.exclude_patterns = Galaxy-Defender-Pydroid3.zip,*.yml,*.yaml,*.md,*.zip
+source.exclude_patterns = Galaxy-Defender-Pydroid3.zip,*.yml,*.yaml,*.md,*.zip,*.ipynb
 
 version = 1.0
 
-# p4a develop pulled Python 3.14, which breaks pygame (longintrepr.h).
-# Master + Python 3.11 is the combo pygame recipes expect.
-requirements = python3==3.11.10,hostpython3==3.11.10,pygame,sdl2
+# Combo used by working 2026 Pygame-to-Android Colab builds
+requirements = python3==3.10.12,kivy==2.3.1,pyjnius==1.7.0,hostpython3==3.10.12,pygame
 orientation = landscape
 fullscreen = 1
 
