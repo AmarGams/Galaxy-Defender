@@ -1,10 +1,4 @@
-name: Build Galaxy Defender EXE - Windows 7
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+name: Build Galaxy Defender EXE - Windo
 
 jobs:
   build:
