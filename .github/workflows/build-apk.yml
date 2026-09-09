@@ -1,94 +1,80 @@
+name: Build Galaxy Defender APK
 
- name: Build Galaxy Defender APK
- 
- on:
-   workflow_dispatch:
-   push:
-     branches: [main]
-     paths:
-       - ".github/workflows/build-apk.yml"
-       - "buildozer.spec"
-+      - "**.py"
-+      - "**.png"
-+      - "**.jpg"
-+      - "**.jpeg"
-+      - "**.gif"
-+      - "**.mp3"
-+      - "**.wav"
-+      - "**.ogg"
-+
-+permissions:
-+  contents: read
- 
- jobs:
-   build:
-     runs-on: ubuntu-22.04
-     timeout-minutes: 180
- 
-     steps:
-       - name: Checkout
-         uses: actions/checkout@v4
- 
-       - name: Setup Java 17
-         uses: actions/setup-java@v4
-         with:
-           distribution: temurin
-           java-version: "17"
- 
-       - name: Setup Python 3.11
-         uses: actions/setup-python@v5
-         with:
-           python-version: "3.11"
- 
-       - name: Install system packages
-         run: |
-           sudo apt-get update
-           sudo apt-get install -y \
-             git zip unzip wget \
-             openjdk-17-jdk \
-             autoconf automake libtool pkg-config \
-             zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 \
-             cmake libffi-dev libssl-dev \
-             build-essential ccache
- 
-       - name: Install Buildozer
-         run: |
-           python -m pip install --upgrade pip
-           pip install "Cython==0.29.36" "setuptools<71.0.0" buildozer virtualenv
-           java -version
-           python --version
-           buildozer --version
- 
--      - name: Cache Buildozer SDK only
-+      - name: Cache Buildozer downloads
-         uses: actions/cache@v4
-         with:
--          path: ~/.buildozer
--          key: buildozer-sdk-master-py311-v3
-+          path: |
-+            ~/.buildozer
-+            .buildozer
-+          key: buildozer-p4a-${{ runner.os }}-py311-v1
-+          restore-keys: |
-+            buildozer-p4a-${{ runner.os }}-py311-
- 
-       - name: Build debug APK
-         run: |
-           yes | buildozer -v android debug || buildozer -v android debug
- 
-       - name: List APK
-         if: success()
-         run: |
-+          echo "APK files:"
-           ls -lh bin/ || true
-           find . -name "*.apk" -print
- 
-       - name: Upload APK
-         if: success()
-         uses: actions/upload-artifact@v4
-         with:
-           name: Galaxy-Defender-APK
-           path: bin/*.apk
-           if-no-files-found: error
-           retention-days: 14
-           
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/build-apk.yml"
+      - "buildozer.spec"
+      - "kivy_app/**"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Buildozer prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git zip unzip wget openjdk-17-jdk \
+            autoconf automake libtool pkg-config \
+            zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 \
+            cmake libffi-dev libssl-dev \
+            build-essential ccache
+
+          python -m pip install --upgrade pip
+          python -m pip install "Cython==0.29.36" "setuptools<71.0.0" buildozer virtualenv
+
+          java -version
+          python --version
+          buildozer --version
+
+      - name: Cache Buildozer downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.buildozer
+            .buildozer
+          key: buildozer-p4a-${{ runner.os }}-py311-kivy-v1
+          restore-keys: |
+            buildozer-p4a-${{ runner.os }}-py311-kivy-
+
+      - name: Build debug APK
+        run: |
+          yes | buildozer -v android debug
+
+      - name: List APK
+        if: success()
+        run: |
+          echo "APK files:"
+          ls -lh bin/
+          find bin -name "*.apk" -print
+
+      - name: Upload APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Galaxy-Defender-APK
+          path: bin/*.apk
+          if-no-files-found: error
+          retention-days: 14
