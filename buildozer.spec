@@ -25,7 +25,7 @@ android.minapi = 24
 android.accept_sdk_license = True
 android.archs = arm64-v8a
 
-p4a.branch = master
+p4a.branch = v2024.01.21
 p4a.bootstrap = sdl2
 
 [buildozer]
