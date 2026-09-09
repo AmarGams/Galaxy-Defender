@@ -11,18 +11,19 @@ source.exclude_patterns = Galaxy-Defender-Pydroid3.zip,*.yml,*.yaml,*.md,*.zip,*
 
 version = 1.0
 
-# Combo used by working 2026 Pygame-to-Android Colab builds
-requirements = python3==3.10.12,kivy==2.3.1,pyjnius==1.7.0,hostpython3==3.10.12,pygame
+# Pygame-only. Do not add kivy (it doubles compile time and often breaks).
+# Pin Python 3.11 so p4a does not pick 3.12/3.14 (longintrepr.h).
+requirements = python3==3.11.10,hostpython3==3.11.10,pygame
 orientation = landscape
 fullscreen = 1
 
-android.permissions = INTERNET,VIBRATE,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
+android.permissions = INTERNET,VIBRATE
 android.api = 33
-android.minapi = 21
+android.minapi = 24
 android.accept_sdk_license = True
 android.archs = arm64-v8a
-
 p4a.branch = master
+p4a.bootstrap = sdl2
 
 [buildozer]
 log_level = 2
