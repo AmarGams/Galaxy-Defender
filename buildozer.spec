@@ -6,6 +6,7 @@ package.domain = org.amargams
 
 source.dir = .
 source.include_exts = py,png,jpg,jpeg,gif,mp3,wav,ogg,txt
+icon.filename = %(source.dir)s/icon.png
 source.exclude_dirs = tests, bin, .github, .git, .buildozer
 source.exclude_patterns = Galaxy-Defender-Pydroid3.zip,*.yml,*.yaml,*.md,*.zip,*.ipynb
 
