@@ -915,4 +915,191 @@ class GalaxyDefender(Widget):
                     bullet.x - 6,
                     bullet.y - 6
                 ),
-                size=(12,
+                size=(12, 12)
+            )
+
+        # Enemies
+        Color(*RED)
+
+        for enemy in self.enemies:
+
+            Ellipse(
+                pos=(
+                    enemy.x - 18,
+                    enemy.y - 18
+                ),
+                size=(36, 36)
+            )
+
+        # Boss
+        if self.boss is not None:
+
+            Color(*PURPLE)
+
+            Ellipse(
+                pos=(
+                    self.boss.x - 60,
+                    self.boss.y - 60
+                ),
+                size=(120, 120)
+            )
+
+            Color(*RED)
+
+            bar_w = max(
+                0,
+                120 * (
+                    self.boss_hp / 20
+                )
+            )
+
+            Rectangle(
+                pos=(
+                    self.boss.x - 60,
+                    self.boss.y + 70
+                ),
+                size=(bar_w, 8)
+            )
+
+        # Health pack
+        if self.health is not None:
+
+            Color(*GREEN)
+
+            Ellipse(
+                pos=(
+                    self.health.x - 14,
+                    self.health.y - 14
+                ),
+                size=(28, 28)
+            )
+
+        # Rapid-fire pack
+        if self.power is not None:
+
+            Color(*YELLOW)
+
+            Ellipse(
+                pos=(
+                    self.power.x - 14,
+                    self.power.y - 14
+                ),
+                size=(28, 28)
+            )
+
+        # Explosions
+        for x, y, age in self.explosions:
+
+            Color(
+                1,
+                0.6,
+                0.1,
+                max(0, 1 - age / 0.35)
+            )
+
+            r = 10 + age * 80
+
+            Ellipse(
+                pos=(
+                    x - r / 2,
+                    y - r / 2
+                ),
+                size=(r, r)
+            )
+
+        # HUD
+        self.label(
+            f"Score {self.score}",
+            self.height - 40,
+            22,
+            WHITE,
+            20
+        )
+
+        self.label(
+            f"Best {self.high_score}",
+            self.height - 70,
+            18,
+            YELLOW,
+            20
+        )
+
+        lives_text = f"Lives {self.lives}"
+
+        self.label(
+            lives_text,
+            self.height - 40,
+            22,
+            GREEN,
+            max(
+                20,
+                self.width - 160
+            )
+        )
+
+        if self.rapid_for > 0:
+
+            self.label(
+                "RAPID",
+                self.height - 70,
+                18,
+                BLUE,
+                max(
+                    20,
+                    self.width - 160
+                )
+            )
+
+    # ---------------------------------------------------------
+    # TEXT
+    # ---------------------------------------------------------
+
+    def label(
+        self,
+        text,
+        y,
+        font_size,
+        color,
+        x=None
+    ):
+
+        lbl = CoreLabel(
+            text=str(text),
+            font_size=font_size
+        )
+
+        lbl.refresh()
+
+        tex = lbl.texture
+
+        if tex is None:
+            return
+
+        if x is None:
+
+            x = (
+                self.width / 2
+                - tex.width / 2
+            )
+
+        Color(*color)
+
+        Rectangle(
+            texture=tex,
+            pos=(x, y),
+            size=tex.size
+        )
+
+
+class GalaxyDefenderApp(App):
+
+    def build(self):
+
+        self.title = "Galaxy Defender"
+
+        return GalaxyDefender()
+
+
+if __name__ == "__main__":
+
+    GalaxyDefenderApp().run()
