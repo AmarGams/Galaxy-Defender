@@ -6,12 +6,14 @@ package.domain = org.amargams
 
 source.dir = kivy_app
 source.include_exts = py,png,jpg,jpeg,gif,mp3,wav,ogg,txt
-icon.filename = %(source.dir)s/icon.png
+icon.filename = icon_launcher.png
+presplash.filename = icon_launcher.png
 
 source.exclude_dirs = tests, bin, .github, .git, .buildozer
 source.exclude_patterns = Galaxy-Defender-Pydroid3.zip,*.yml,*.yaml,*.md,*.zip,*.ipynb
 
-version = 1.0
+version = 1.1
+android.numeric_version = 2
 
 requirements = python3,kivy
 
